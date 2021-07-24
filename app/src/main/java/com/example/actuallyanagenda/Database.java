@@ -77,7 +77,7 @@ public class Database {
         }
         public static TableInfo tasksTable = new TableInfo("Tasks",
                 new String [] {"Name", "Description", "DurationInMins", "Due Date", "Scheduled Start Time", "Scheduled End Time", "Priority"},
-                new String [] {"TEXT", "TEXT", "INTEGER", "INTEGER", "TEXT", "TEXT", "INTEGER"});
+                new String [] {"TEXT", "TEXT", "TEXT", "TEXT", "TEXT", "TEXT", "TEXT"});
 
         public String createTableSQL(TableInfo table) { //creates the sql statement that creates the table
             String output = "CREATE TABLE " + table.tableName + " (" + tasksTable._ID + " INTEGER PRIMARY KEY, ";
