@@ -2,6 +2,7 @@ package com.example.actuallyanagenda;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -18,9 +19,7 @@ public class MainActivity extends AppCompatActivity {
         Button createTask = findViewById(R.id.button);
         Button showTasks = findViewById(R.id.button2);
     }
-    public void addTask (View view) {
-        db.insertTask("test", "test task, pls delete later", "15", "date");
-    }
+
     public void showTasks (View view) {
         ArrayList<String[]> output = db.getTasks();
         for (int x=0; x<output.size(); x++) {
@@ -29,5 +28,9 @@ public class MainActivity extends AppCompatActivity {
                 System.out.println();
             }
         }
+    }
+    public void switchToCreateTask(View view) {
+        Intent switchScreens = new Intent(this, CreateTask.class); //"Intent" passes important stuff to another screen (called "Activity"), like the create task screen
+        startActivity(switchScreens);
     }
 }
