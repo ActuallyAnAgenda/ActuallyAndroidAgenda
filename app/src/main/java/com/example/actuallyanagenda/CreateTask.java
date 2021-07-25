@@ -15,7 +15,7 @@ import java.util.Calendar;
 
 public class CreateTask extends AppCompatActivity {
     Database db;
-    EditText name, description, duration, dueDate;
+    EditText name, description, duration, dueDate, dueTime;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,6 +89,57 @@ public class CreateTask extends AppCompatActivity {
             public void afterTextChanged (Editable s){}
         };
         dueDate.addTextChangedListener(tw);
+
+        dueTime = (EditText)findViewById(R.id.duetime);
+        TextWatcher tw2 = new TextWatcher() { //credit to https://stackoverflow.com/questions/16889502/how-to-mask-an-edittext-to-show-the-dd-mm-yyyy-date-format/16889503#16889503
+            private String current = "";
+            private String ddmmyyyy = "DDMMYYYY";
+            private Calendar cal = Calendar.getInstance();
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (!s.toString().equals(current)) {
+                    String clean = s.toString().replaceAll("[^\\d.]|\\.", "");
+                    String cleanC = current.replaceAll("[^\\d.]|\\.", "");
+
+                    int cl = clean.length();
+                    int sel = cl;
+                    for (int i = 2; i <= cl && i < 6; i += 2) {
+                        sel++;
+                    }
+                    //Fix for pressing delete next to a forward slash
+                    if (clean.equals(cleanC)) sel--;
+
+                    if (clean.length() < 8) {
+                        clean = clean + ddmmyyyy.substring(clean.length());
+                    } else {
+                        //This part makes sure that when we finish entering numbers
+                        //the date is correct, fixing it otherwise
+                        int hour = Integer.parseInt(clean.substring(0, 2));
+                        int min = Integer.parseInt(clean.substring(2, 4));
+
+                        min = min < 1 ? 1 : min > 60 ? 60 : min;
+                        cal.set(Calendar.MINUTE, min - 1);
+                        hour = (hour < 0) ? 0 : (hour > 24) ? 24 : hour;
+                        cal.set(Calendar.HOUR, hour);
+
+                        clean = String.format("%02d%02d", hour, min);
+                    }
+
+                    clean = String.format("%s:%s", clean.substring(0, 2),
+                            clean.substring(2, 4));
+
+                    sel = sel < 0 ? 0 : sel;
+                    current = clean;
+                    dueTime.setText(current);
+                    dueTime.setSelection(sel < current.length() ? sel : current.length());
+                }
+            }
+
+            public void beforeTextChanged (CharSequence s,int start, int count, int after){}
+            @Override
+            public void afterTextChanged (Editable s){}
+        };
+        dueTime.addTextChangedListener(tw2);
     }
     public void addTask (View view) {
         String nameEntry = name.getText().toString();

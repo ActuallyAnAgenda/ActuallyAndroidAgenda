@@ -22,7 +22,7 @@ public class CalendarActivity extends AppCompatActivity {
      * Adds an entry to the calendar using
      * @param entry
      */
-    protected void addEntry(CalendarEntry entry) {
-
-    }
+//    protected void addEntry(CalendarEntry entry) {
+//
+//    }
 }

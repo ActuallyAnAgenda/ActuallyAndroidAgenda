@@ -29,7 +29,10 @@ public class MainActivity extends AppCompatActivity {
             System.out.println();
         }
     }
-
+    public void switchToShowTasks(View view) {
+        Intent switchScreens = new Intent(this, TaskList.class); //"Intent" passes important stuff to another screen (called "Activity"), like the create task screen
+        startActivity(switchScreens);
+    }
     public void deleteTasksTable(View view) {
         db.deleteTasksTable();
     }

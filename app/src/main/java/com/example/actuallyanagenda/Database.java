@@ -26,8 +26,8 @@ public class Database {
     }
     //list of tables
     public static TableInfo tasksTable = new TableInfo("Tasks",
-            new String [] {"Name", "Description", "DurationInMins", "Due_Date", "Scheduled_Start_Time", "Scheduled_End_Time", "Priority"},
-            new String [] {"TEXT", "TEXT", "TEXT", "TEXT", "TEXT", "TEXT", "TEXT"});
+            new String [] {"Name", "Description", "DurationInMins", "Due_Date", "Due_Time", "Scheduled_Start_Time", "Scheduled_End_Time", "Variable"},
+            new String [] {"TEXT", "TEXT", "TEXT", "TEXT", "TEXT", "TEXT", "TEXT", "TEXT"});
 
     /**
      * inserts a task into the Task table
@@ -78,7 +78,7 @@ public class Database {
     }
 
     static class dbHelper extends SQLiteOpenHelper { //create/update database
-        public static final int DATABASE_VERSION = 7; //increment when you change database schema
+        public static final int DATABASE_VERSION = 8; //increment when you change database schema
         public static final String DATABASE_NAME = "ActuallyAnAgenda.db";
 
         public dbHelper(Context context) {

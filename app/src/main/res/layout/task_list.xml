@@ -20,26 +20,18 @@
         app:layout_constraintVertical_bias="0.073" />
 
     <ListView
-        android:id="@+id/mobile_list"
+        android:id="@+id/tasklist"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:divider="#000"
+        android:dividerHeight="2dp"
+        android:listSelector="#600"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.198"></ListView>
+        app:layout_constraintVertical_bias="0.162" />
 
-    <Button
-        android:id="@+id/addtask"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:onClick="addTask"
-        android:text="Add Task"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.976" />
     <Button
         android:id="@+id/backtomainactivity"
         android:layout_width="wrap_content"
