@@ -9,9 +9,25 @@ import java.util.*;
 
 public class Database {
     dbHelper help;
+
     public Database(Context context) {
         help = new dbHelper(context);
     }
+
+    public static class TableInfo {
+        public String tableName = ""; //string
+        public String [] columnNames = new String [1]; //columnNames and columnTypes should have the same length
+        public String [] columnTypes = new String [1];
+        public TableInfo(String tableName, String [] columnNames, String [] columnTypes) {
+            this.tableName = tableName;
+            this.columnNames = columnNames;
+            this.columnTypes = columnTypes;
+        }
+    }
+    //list of tables
+    public static TableInfo tasksTable = new TableInfo("Tasks",
+            new String [] {"Name", "Description", "DurationInMins", "Due_Date", "Scheduled_Start_Time", "Scheduled_End_Time", "Priority"},
+            new String [] {"TEXT", "TEXT", "TEXT", "TEXT", "TEXT", "TEXT", "TEXT"});
 
     /**
      * inserts a task into the Task table
@@ -25,63 +41,52 @@ public class Database {
         //preferably the columns aren't hard coded :/
         SQLiteDatabase db = help.getWritableDatabase();
         db.execSQL("INSERT INTO Tasks(Name,Description,durationInMins,Due_Date) VALUES ('"+name+"', '"+description+"', '"+durationInMins+"', '"+dueDate+"')");
-//        ContentValues insert = new ContentValues();
-//        insert.put("Name", name);
-//        insert.put("Description", description);
-//        insert.put("durationInMins", durationInMins);
-//        insert.put("dueDate", dueDate);
-//        return db.insert("Tasks", null , insert);
     }
     /**
      * gets the Task table
-     * @return an ArrayList of the task table, with each task represented by a String array.
+     * @return an ArrayList of the task table, with each task represented by a String array. The first entry of the ArrayList are the column names
      *          [0] is the ID of the task, [1] is the Name, [2] is the description, [3] is the duration in minutes, etc.
      */
     public ArrayList<String[]> getTasks() {
         SQLiteDatabase db = help.getWritableDatabase();
-        String[] columns = {"Name", "Description", "DurationInMins", "Due_Date", "Scheduled_Start_Time", "Scheduled_End_Time", "Priority"};
-        Cursor cursor = db.query("Tasks", columns,null,null,null,null,null);
+        Cursor cursor = db.query(tasksTable.tableName, tasksTable.columnNames,null,null,null,null,null);
         ArrayList<String[]> output = new ArrayList<>();
+        String [] columnTitles = new String [tasksTable.columnNames.length+1];
+        columnTitles[0] = "id";
+        for (int x=1; x<=tasksTable.columnNames.length; x++) {
+            columnTitles[x] = tasksTable.columnNames[x-1];
+        }
+        output.add(columnTitles);
         while (cursor.moveToNext()) {
-            String [] currentTask = new String [columns.length+1]; //probably should've made every entry in the table a string...
-//            currentTask[0] = cursor.getInt(cursor.getColumnIndex("_id"))+"";
-            currentTask[1] = cursor.getString(cursor.getColumnIndex("Name"));
-            currentTask[2] = cursor.getString(cursor.getColumnIndex("Description"));
-            currentTask[3] = cursor.getString(cursor.getColumnIndex("DurationInMins"));
-            currentTask[4] = cursor.getString(cursor.getColumnIndex("Due_Date"));
-            currentTask[5] = cursor.getString(cursor.getColumnIndex("Scheduled_Start_Time"));
-            currentTask[6] = cursor.getString(cursor.getColumnIndex("Scheduled_End_Time"));
-            currentTask[7] = cursor.getString(cursor.getColumnIndex("Priority"));
-            // monkey code
+            String [] currentTask = new String [tasksTable.columnNames.length+1];
+            currentTask[0] = cursor.getInt(Math.max(cursor.getColumnIndex(columnTitles[0]), 0))+""; //bc apparently ID is at column -1 and doesn't exist
+            for (int x=1; x<=tasksTable.columnNames.length; x++) {
+                currentTask[x] = cursor.getString(cursor.getColumnIndex(tasksTable.columnNames[x-1]));
+            }
             output.add(currentTask);
         }
         cursor.close();
         return output;
     }
+    public void deleteTasksTable() {
+        SQLiteDatabase db = help.getWritableDatabase();
+        help.deleteTasksTable(db);
+    }
+    public void deleteTasksTableSchedule(String nameOfDeletedTask) {
+        SQLiteDatabase db = help.getWritableDatabase();
+        help.clearTaskTableEntry(db, nameOfDeletedTask);
+    }
 
     static class dbHelper extends SQLiteOpenHelper { //create/update database
-        public static final int DATABASE_VERSION = 1; //increment when you change database schema
+        public static final int DATABASE_VERSION = 7; //increment when you change database schema
         public static final String DATABASE_NAME = "ActuallyAnAgenda.db";
 
         public dbHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
         }
-        public static class TableInfo implements BaseColumns {
-            public String tableName = ""; //string
-            public String [] columnNames = new String [1]; //columnNames and columnTypes should have the same length
-            public String [] columnTypes = new String [1];
-            public TableInfo(String tableName, String [] columnNames, String [] columnTypes) {
-                this.tableName = tableName;
-                this.columnNames = columnNames;
-                this.columnTypes = columnTypes;
-            }
-        }
-        public static TableInfo tasksTable = new TableInfo("Tasks",
-                new String [] {"Name", "Description", "DurationInMins", "Due_Date", "Scheduled_Start_Time", "Scheduled_End_Time", "Priority"},
-                new String [] {"TEXT", "TEXT", "TEXT", "TEXT", "TEXT", "TEXT", "TEXT"});
 
         public String createTableSQL(TableInfo table) { //creates the sql statement that creates the table
-            String output = "CREATE TABLE " + table.tableName + " (" + tasksTable._ID + " INTEGER PRIMARY KEY, ";
+            String output = "CREATE TABLE " + table.tableName + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "; //for some inexplicable reason the id refuses to work properly
             int length = table.columnNames.length;
             for (int x=0; x<length-1; x++) {
                 output+=table.columnNames[x]+" "+table.columnTypes[x]+", ";
@@ -92,6 +97,19 @@ public class Database {
         public String deleteTableSQL(TableInfo table) { //creates the sql statement that deletes the table
             return "DROP TABLE IF EXISTS " + table.tableName;
         }
+        public void deleteTasksTable(SQLiteDatabase db) { //function that deletes the tasks table
+            db.execSQL(deleteTableSQL(tasksTable));
+        }
+        public void clearTaskTableEntry(SQLiteDatabase db, String deleteName) { //creates the sql statement that completely empties the table
+            db.execSQL(clearTaskTableEntrySQL(tasksTable, deleteName));
+        }
+        public String clearTableSQL(TableInfo table) { //creates the sql statement that completely empties the table
+            return "DELETE FROM " + table.tableName;
+        }
+        public String clearTaskTableEntrySQL(TableInfo table, String deleteName) { //creates the sql statement that completely empties the table
+            return "DELETE FROM " + table.tableName + "WHERE ";
+        }
+
 
         public void onCreate(SQLiteDatabase db) { //create database if it doesn't exist
             db.execSQL(createTableSQL(tasksTable));
