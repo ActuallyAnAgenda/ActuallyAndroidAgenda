@@ -21,15 +21,16 @@ public class Database {
      * @param dueDate due date, in DD/MM/YYYY format...?
      * @return the id of the inserted task in the table
      */
-    public long insertTask(String name, String description, int durationInMins, String dueDate) {
+    public void insertTask(String name, String description, String durationInMins, String dueDate) {
         //preferably the columns aren't hard coded :/
         SQLiteDatabase db = help.getWritableDatabase();
-        ContentValues insert = new ContentValues();
-        insert.put("Name", name);
-        insert.put("Description", description);
-        insert.put("durationInMins", durationInMins);
-        insert.put("dueDate", dueDate);
-        return db.insert("Tasks", null , insert);
+        db.execSQL("INSERT INTO Tasks(Name,Description,durationInMins,Due_Date) VALUES ('"+name+"', '"+description+"', '"+durationInMins+"', '"+dueDate+"')");
+//        ContentValues insert = new ContentValues();
+//        insert.put("Name", name);
+//        insert.put("Description", description);
+//        insert.put("durationInMins", durationInMins);
+//        insert.put("dueDate", dueDate);
+//        return db.insert("Tasks", null , insert);
     }
     /**
      * gets the Task table
@@ -38,23 +39,23 @@ public class Database {
      */
     public ArrayList<String[]> getTasks() {
         SQLiteDatabase db = help.getWritableDatabase();
-        String[] columns = {"Name", "Description", "DurationInMins", "Due Date", "Scheduled Start Time", "Scheduled End Time", "Priority"};
-        Cursor cursor =db.query("Tasks", columns,null,null,null,null,null);
-
-        ArrayList<String[]> output = new ArrayList<String[]>();
-        while (cursor.moveToNext())
-        {
+        String[] columns = {"Name", "Description", "DurationInMins", "Due_Date", "Scheduled_Start_Time", "Scheduled_End_Time", "Priority"};
+        Cursor cursor = db.query("Tasks", columns,null,null,null,null,null);
+        ArrayList<String[]> output = new ArrayList<>();
+        while (cursor.moveToNext()) {
             String [] currentTask = new String [columns.length+1]; //probably should've made every entry in the table a string...
-            currentTask[0] = cursor.getInt(cursor.getColumnIndex("_id"))+"";
+//            currentTask[0] = cursor.getInt(cursor.getColumnIndex("_id"))+"";
             currentTask[1] = cursor.getString(cursor.getColumnIndex("Name"));
             currentTask[2] = cursor.getString(cursor.getColumnIndex("Description"));
             currentTask[3] = cursor.getString(cursor.getColumnIndex("DurationInMins"));
-            currentTask[4] = cursor.getString(cursor.getColumnIndex("Due Date"));
-            currentTask[5] = cursor.getString(cursor.getColumnIndex("Scheduled Start Time"));
-            currentTask[6] = cursor.getString(cursor.getColumnIndex("Scheduled End Time"));
+            currentTask[4] = cursor.getString(cursor.getColumnIndex("Due_Date"));
+            currentTask[5] = cursor.getString(cursor.getColumnIndex("Scheduled_Start_Time"));
+            currentTask[6] = cursor.getString(cursor.getColumnIndex("Scheduled_End_Time"));
             currentTask[7] = cursor.getString(cursor.getColumnIndex("Priority"));
+            // monkey code
             output.add(currentTask);
         }
+        cursor.close();
         return output;
     }
 
@@ -67,16 +68,16 @@ public class Database {
         }
         public static class TableInfo implements BaseColumns {
             public String tableName = ""; //string
-            public String [] columnNames = new String [1]; //columNames and columnTypes should have the same length
+            public String [] columnNames = new String [1]; //columnNames and columnTypes should have the same length
             public String [] columnTypes = new String [1];
             public TableInfo(String tableName, String [] columnNames, String [] columnTypes) {
-                tableName = tableName;
-                columnNames = columnNames;
-                columnTypes = columnTypes;
+                this.tableName = tableName;
+                this.columnNames = columnNames;
+                this.columnTypes = columnTypes;
             }
         }
         public static TableInfo tasksTable = new TableInfo("Tasks",
-                new String [] {"Name", "Description", "DurationInMins", "Due Date", "Scheduled Start Time", "Scheduled End Time", "Priority"},
+                new String [] {"Name", "Description", "DurationInMins", "Due_Date", "Scheduled_Start_Time", "Scheduled_End_Time", "Priority"},
                 new String [] {"TEXT", "TEXT", "TEXT", "TEXT", "TEXT", "TEXT", "TEXT"});
 
         public String createTableSQL(TableInfo table) { //creates the sql statement that creates the table
@@ -85,7 +86,7 @@ public class Database {
             for (int x=0; x<length-1; x++) {
                 output+=table.columnNames[x]+" "+table.columnTypes[x]+", ";
             }
-            output+=table.columnNames[length-1]+" "+table.columnTypes[length-1]+")";
+            output+=table.columnNames[length-1]+" "+table.columnTypes[length-1]+");";
             return output;
         }
         public String deleteTableSQL(TableInfo table) { //creates the sql statement that deletes the table
